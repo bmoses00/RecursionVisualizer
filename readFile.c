@@ -46,16 +46,40 @@ int main() {
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
-    int lineNo = 0;
+    int lineNo = 1;
     int functionNo = 0;
     while ((read = getline(&inputLine, &len, fp)) != -1) {
-        if (array[functionNo] == lineNo) {
-            functionNo++;
-            fputs("// FUNCTION CALL\n", fOut);
-        }
         fputs(inputLine, fOut);
+
+        if (array[functionNo] == lineNo) {
+            char* endOfParamsPtr = strchr(inputLine, ')');
+            if (*(endOfParamsPtr - 1) == '(') {
+                fputs("\tprintf(\"%s\", \"No arguments\\n\");\n", fOut);
+            }
+            else {
+                *endOfParamsPtr = 0;
+                int endOfParams = endOfParamsPtr - inputLine;
+                int beginningOfParam = endOfParams;
+
+                for (char currentChar = *endOfParamsPtr; currentChar != ' '; endOfParamsPtr--, currentChar = *endOfParamsPtr, beginningOfParam--);
+
+                char* printStatementBeginning = "\tprintf(\"int ";
+                char* printStatementEnd = ": %d\\n\", input);\n";
+
+                char toPrint[strlen(printStatementBeginning) + strlen(beginningOfParam + inputLine + 1) + strlen(printStatementEnd)];
+
+                strcpy(toPrint, printStatementBeginning);
+                strcat(toPrint, beginningOfParam + inputLine + 1);
+                strcat(toPrint, printStatementEnd);
+
+                fputs(toPrint, fOut); 
+                }
+            functionNo++;
+            }
         lineNo++;
-    }
+
+        }
+    
 
     fclose(fp);
     fclose(fOut);
